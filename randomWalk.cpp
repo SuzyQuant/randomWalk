@@ -4,109 +4,105 @@
 #include <iomanip>
 #include <cstdlib>
 #include <cmath>
-#include <time.h>
-#include <string>
 
 using namespace std;
 
-//CONSTANT VARIABLES
-const int numberOfWalkers = 2;
-const int numSteps = 7;
-int accum = 0;
+const int numWalkers = 10;  //NUMBER OF WALKERS
+const int numSteps = 50;  //NUMBER OF STEPS
 
-//START MAIN PROGRAM
 int main(int argc, char const* argv[])
 {
-    cout << "NUMBER OF WALKERS: " << numberOfWalkers << endl;
-    cout << "NUMBER OF STEPS: " << numSteps << endl << endl;
+    string line;
 
-    //INITIALIZING FOR TEXT FILES
+    //SET OUTPUT TEXT FILES
     ofstream probOut;
     ofstream posNSteps;
     ofstream posMean;
-    ofstream stepsX2ave;
-    ofstream probCounter;
-
     probOut.open("positionVSProbabilityOutput.csv");
     posNSteps.open("positionVSNumStepsOutput.csv");
     posMean.open("positionVSMeanSquareOutput.csv");
-    stepsX2ave.open("x2averageVSsteps.csv");
-    probCounter.open("myCounterVSprobability.csv");
 
-    //DECLARATION OF VARIABLES & ARRAYS
+    cout << "NUMBER OF WALKERS: " << numWalkers << endl;
+    cout << "NUMBER OF STEPS: " << numSteps << endl << endl;
 
-      // x2ave IS THE MEAN SQUARE DISPLACEMENT AND IS A FUNCTION OF NUMBER OF STEPS OR TIME, VARIABLE i
-      // x IS DISPLACEMENT AFTER A SINGLE WALKER IS DONE AND IS A FUNCTION OF NUMBER OF WALKERS, VARIABLE k
-    int* step_number = new int[numSteps];
-    int* x2ave = new int[numSteps];
-    int* x = new int[numberOfWalkers];
-
-
-    //  TO BE USED IN SOLVING FOR PROBABILITY DISTRIBUTION
-    double* prb = new double[2 * numSteps + 1];
-    int* myCounter = new int[numSteps * 2 + 1];
-
-    // DECLARATION OF ARRAY AS ZEROS
+    //ARRAY TO HOLD ALL X2AVE VALUES
+    int* x2ave = new int[numSteps]; 
     for (int i = 0; i < numSteps; i++) {
         x2ave[i] = 0;
-        x[i] = 0;
-        step_number[i] = 0;
     }
 
+    //SET PROBABILITY VARIABLES
+    double* prb = new double[2 * numSteps + 1]; //ARRAY TO HOLD PROBABILITY OF EACH POSITION TO BE VISITED
+    int* countNumberOfVisits = new int[numSteps * 2 + 1]; //ARRAY TO COUNT THE NUMBER OF VISITS PER POSITION
     for (int i = 0; i < (2 * numSteps + 1); i++) {
-        myCounter[i] = 0;
+        countNumberOfVisits[i] = 0;
         prb[i] = 0.0;
     }
 
-    // LOOP FOR A NUMBER OF WALKERS TAKING SUCH NUMBER OF RANDOM STEPS
-    for (int k = 0; k < numberOfWalkers; k++) {
+    //FOR LOOP FOR EACH WALKER
+    for (int k = 0; k < numWalkers; k++) {
+        int currentPosition = 0; //CURRENT POSITION OF WALKER
 
-        int position = 0; //SET INITIAL POSITION TO ZERO PER WALKER K = 1,2,3,.., numberOfWalkers
-
-        for (int i = 0; i < numSteps; i++)  // START OF LOOP FOR EVERY RANDOM STEP OF A SINGLE WALKER
+        //FOR LOOP - FOR EACH STEP TAKEN
+        for (int i = 0; i < numSteps; i++)
         {
+            //TOSS COIN IF HEAD OR TAIL
             int randomNum = rand() % 2;
 
-            if (randomNum == 1)
+            if (randomNum == 1) //IF HEADS
             {
-                position++;
+                cout << "Walker " << k + 1 << " Step " << i + 1 << ":" << endl;
+                currentPosition += 1;
+                cout << "==== TOSS COIN SHOWS HEAD: x added so new position x is " << currentPosition << endl;
             }
-            else
+            else //IF TAILS
             {
-                position--;
+                cout << "Walker " << k + 1 << " Step " << i + 1 << ":" << endl;
+                currentPosition += -1;
+                cout << "==== COIN SHOWS TAIL: x subtracted so new position x is " << currentPosition << endl;
             }
 
-            //now you get a new position 
-            x2ave[i] = x2ave[i] + position * position;
-            cout << "x2ave[i=" << i << "] " << x2ave[i] << endl << endl;
-            accum = accum + x2ave[i]; //ADDS UP ALL THE X2AVE
+            //INCREMENT countNumberOfVisits[i] EVERYTIME POSITION i IS VISITED
+            countNumberOfVisits[currentPosition + numSteps] += 1;
+            cout << "==== New position is: " << currentPosition << endl;
 
+            //COMPUTE X2AVE[i]
+            x2ave[i] = x2ave[i] + (currentPosition * currentPosition);
+            cout << "==== The squared distance is <x^2> = " << x2ave[i] << endl << endl;
         }
-        cout << "New position for a single walker:  " << position << endl;
-        x[k] = position;    // x[k] IS THE POSITION WHERE THE WALKER k STOPPED WALKING
-        cout << "x[" << k << "] at k = " << k << " with upper limit " << numberOfWalkers << " is ===> " << x[k] << endl;
-        myCounter[x[k] + numSteps] += 1;    // TO BE USED IN PLOTTING THE PROBABILITY DISTRIBUTION
-        cout << "myCounter[" << x[k] + numSteps << "] is ===> " << myCounter[x[k] + numSteps] << endl;
-        cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++ " << endl << endl;
-
-        // NOW WE START THE LOOP FOR VARIABLE k FOR A NEW WALKER UNTIL WE'RE DONE FOR ALL WALKERS
-
-    }// END OF THE LOOP FOR A NUMBER OF WALKERS TAKING SUCH NUMBER OF RANDOM STEPS
-
-
-    //MEAN SQUARE
-    cout << endl;
-    for (int i = 0; i < numSteps; i++) {
-        cout << "x2ave[i] " << x2ave[i] << endl;
-        double meanSquare = x2ave[i] / numberOfWalkers;
-        cout << i << "," << meanSquare << endl;
-        posMean << i << "," << meanSquare << endl; // Output: meanSquare vs numsteps
+        cout << endl;
     }
 
-    probCounter.close();
+    //Mean Square
+    cout << endl;
+    for (int i = 0; i < numSteps; i++) {
+        double meanSquare = x2ave[i] / numWalkers;
+        posMean << i << ", " << meanSquare << endl;
+    }
+
+    //PROBABILITY
+    cout << endl;
+    cout << "Probability Values:" << endl << endl;
+    for (int i = 0; i < (2 * numSteps + 1); i++)
+    {
+        //COMPUTE PROBABILITY OF POSITION i
+        prb[i] = (double)countNumberOfVisits[i] / (double)numWalkers;
+        if (countNumberOfVisits[i] != 0) {
+            cout << "Total Steps and Probability of Walker To Be At Distance " << i - numSteps << ": " << countNumberOfVisits[i] << ", " << prb[i] << endl;
+        }
+        probOut << i - numSteps << ", " << prb[i] << endl;  // Output(x,y): POSITION VS PROBABILITY
+        posNSteps << i - numSteps << ", " << countNumberOfVisits[i] << endl; // Output(x,y): POSITION VS TOTAL STEPS THE POSITION WAS VISITED
+    }
+
+    //THIS IS JUST A REMINDER OF THE THREE OUTPUT FILES CREATED
+    cout << endl
+        << "3 Output files have been created: " << endl
+        << "positionVSProbabilityOutput.csv, " << endl
+        << "positionVSNumStepsOutput.csv, " << endl
+        << "positionVSMeanSquareOutput.csv," << endl << endl;
+
     probOut.close();
     posNSteps.close();
     posMean.close();
-    stepsX2ave.close();
     return 0;
 }
