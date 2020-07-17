@@ -4,15 +4,24 @@
 #include <iomanip>
 #include <cstdlib>
 #include <cmath>
+#include <complex>
 
 using namespace std;
 
-const int numWalkers = 100;  //NUMBER OF WALKERS
-const int numSteps = 7;  //NUMBER OF STEPS
+const int numWalkers = 5;  //NUMBER OF WALKERS
+const int numSteps = 22;  //NUMBER OF STEPS (CANNOT SET GREATER THAN 22 SINCE FACTORIAL IS GOING TO BEHAVE ABNORMALLY)
+
+unsigned long long fact(int n)
+{
+    if ((n == 0) || (n == 1))
+        return 1;
+    else
+        return n * fact(n - 1);
+}
 
 int main(int argc, char const* argv[])
 {
-    
+
     //SET OUTPUT TEXT FILES
     ofstream probOut;
     ofstream posMean;
@@ -23,7 +32,7 @@ int main(int argc, char const* argv[])
     cout << "NUMBER OF STEPS: " << numSteps << endl << endl;
 
     //aStepSquared IS WHERE A STEP OF A WALKER IS SQUARED 
-    int* aStepSquared = new int[numSteps]; 
+    int* aStepSquared = new int[numSteps];
     for (int itime = 0; itime < numSteps; itime++) {
         aStepSquared[itime] = 0;
     }
@@ -49,7 +58,7 @@ int main(int argc, char const* argv[])
             //==============================
             if (randomNum == 1)
                 currentPosition++;
-            else 
+            else
                 currentPosition--;
             //==============================
             cout << "==== New position is: " << currentPosition << endl;
@@ -62,27 +71,3 @@ int main(int argc, char const* argv[])
         //INCREMENT countNumberOfVisits[] EVERYTIME currentPosition IS VISITED
         countNumberOfVisits[currentPosition + numSteps] += 1;
     }
-
-    //Mean Square
-    cout << endl;
-    for (int itime = 0; itime < numSteps; itime++) {
-        double meanSquare = (double)aStepSquared[itime] / (double)numWalkers;
-        posMean << itime << ", " << meanSquare << endl;
-    }
-
-    //PROBABILITY
-    cout << endl;
-    cout << "Probability Values:" << endl << endl;
-    for (int position = 0; position < (2 * numSteps + 1); position++)
-    {
-        //COMPUTE PROBABILITY OF POSITION i
-        probability[position] = (double)countNumberOfVisits[position] / (double)numWalkers;
-        if (countNumberOfVisits[position] != 0) {
-            cout << "Total Steps and Probability of Walker To Be At Distance " << position - numSteps << ": " << countNumberOfVisits[position] << ", " << probability[position];
-            probOut << position - numSteps << ", " << probability[position] << endl;  // Output(x,y): POSITION VS PROBABILITY
-        }
-    }
-    probOut.close();
-    posMean.close();
-    return 0;
-}
