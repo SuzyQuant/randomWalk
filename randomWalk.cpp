@@ -5,7 +5,6 @@
 #include <cstdlib>
 #include <cmath>
 #include <complex>
-#include <bits/stdc++.h> 
 
 using namespace std;
 
@@ -27,8 +26,10 @@ int main(int argc, char const* argv[])
 
     //SET OUTPUT TEXT FILES
     ofstream probOut;
+    ofstream probTwoOut;
     ofstream posMean;
-    probOut.open("positionVSProbabilityOutput.csv");
+    probOut.open("positionVSProbabilityOutput.csv");  //FILE FOR FIRST PROBABILITY OUTPUT
+    probTwoOut.open("positionVSProbabilityOutput2.csv"); //FILE FOR SECOND PROBABILITY OUTPUT
     posMean.open("positionVSMeanSquareOutput.csv");
 
     cout << "NUMBER OF WALKERS: " << numWalkers << endl;
@@ -108,16 +109,35 @@ int main(int argc, char const* argv[])
     cout << endl;
     cout << "Probability Values:" << endl << endl;
 
-    for (int position = (-1 * numSteps); position <= numSteps; position+=2)
+    for (int position = (-1 * numSteps); position <= numSteps; position += 2)
     {
-                double totalPossibleVisits = fact(numSteps) / (fact((numSteps + abs(position)) / 2) * fact((numSteps - abs(position)) / 2));
-                double prob = totalPossibleVisits / pow(2, numSteps);
-                probOut << position << ", " << prob << endl;
+        double totalPossibleVisits = fact(numSteps) / (fact((numSteps + abs(position)) / 2) * fact((numSteps - abs(position)) / 2));
+        double prob = totalPossibleVisits / pow(2, numSteps);
+        probOut << position << ", " << prob << endl;
     }
 
     cout << endl << endl;
 
+    //OTHER PROBABILITY REQUESTED
+    //UTILIZING ONLY THE VISITS ACTUALLY DONE
+    //==================================
+
+    cout << endl;
+    cout << "Probability Values:" << endl << endl;
+
+    for (int i = 0; i < (2 * numSteps + 1); i += 2)
+    {
+        //COMPUTE PROBABILITY OF POSITION i
+        probability[i] = (double)countNumberOfVisits[i] / (double)numWalkers;
+        if (countNumberOfVisits[i] != 0) {
+            cout << "Total Steps and Probability of Walker To Be At Distance " << i - numSteps << ": " << countNumberOfVisits[i] << ", " << probability[i] << endl;
+        }
+        probTwoOut << i - numSteps << ", " << probability[i] << endl;  // Output(x,y): POSITION VS PROBABILITY
+    }
+
     probOut.close();
+    probTwoOut.close();
     posMean.close();
     return 0;
+
 }
