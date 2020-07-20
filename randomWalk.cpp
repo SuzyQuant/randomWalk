@@ -27,9 +27,11 @@ int main(int argc, char const* argv[])
     //SET OUTPUT TEXT FILES
     ofstream probOut;
     ofstream probTwoOut;
+    ofstream probThreeOut;
     ofstream posMean;
     probOut.open("positionVSProbabilityOutput.csv");  //FILE FOR FIRST PROBABILITY OUTPUT
     probTwoOut.open("positionVSProbabilityOutput2.csv"); //FILE FOR SECOND PROBABILITY OUTPUT
+    probThreeOut.open("positionVSProbabilityOutput3.csv"); //FILE FOR THIRD PROBABILITY OUTPUT
     posMean.open("positionVSMeanSquareOutput.csv");
 
     cout << "NUMBER OF WALKERS: " << numWalkers << endl;
@@ -135,8 +137,24 @@ int main(int argc, char const* argv[])
         probTwoOut << i - numSteps << ", " << probability[i] << endl;  // Output(x,y): POSITION VS PROBABILITY
     }
 
+    //THIRD PROBABILITY REQUESTED
+    //USING LOGARITHMIC EQUATION
+
+    cout << endl << endl;
+    cout << "COMPUTING PROBABILITY USING LOGARITHMIC EQUATION .." << endl << endl;
+    double probLN;
+    int N = numSteps;
+
+    for (int i = 0; i < (2 * numSteps + 1); i += 2) {
+        int m = abs(i - numSteps);
+        probLN = pow((N / 2), N) / (pow((N + m) / 2, (N + m) / 2) * pow((N - m)/2, (N - m) / 2));
+        probThreeOut << i - numSteps << ", " << probLN << endl;
+    }
+
+
     probOut.close();
     probTwoOut.close();
+    probThreeOut.close();
     posMean.close();
     return 0;
 
