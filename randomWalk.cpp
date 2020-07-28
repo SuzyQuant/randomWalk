@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -8,46 +9,62 @@
 
 using namespace std;
 
-const int numWalkers = 1000;  //NUMBER OF WALKERS
-const int numSteps = 22;  //NUMBER OF STEPS (CANNOT SET GREATER THAN 22 SINCE FACTORIAL IS GOING TO BEHAVE ABNORMALLY, MEMORY CAN'T CONTAIN)
+const int numWalkers = 100;  //NUMBER OF WALKERS
+const int numSteps = 500;  //NUMBER OF STEPS (CANNOT SET GREATER THAN 22 SINCE FACTORIAL IS GOING TO BEHAVE ABNORMALLY, MEMORY CAN'T CONTAIN)
 
 double q1 = 1 / sqrt(numSteps), q2 = 1, q3 = sqrt(numSteps);
 
-unsigned long long fact(int n)
-{
-    if ((n == 0) || (n == 1))
-        return 1;
-    else
-        return n * fact(n - 1);
-}
-
 int main(int argc, char const* argv[])
 {
-
     //SET OUTPUT TEXT FILES
-    ofstream probOut;
     ofstream probTwoOut;
-    ofstream probThreeOut;
     ofstream posMean;
-    probOut.open("positionVSProbabilityOutput.csv");  //FILE FOR FIRST PROBABILITY OUTPUT
+    ofstream posMean2;
+    ofstream posStdevMean;
+    ofstream cosineRq1;
+    ofstream cosineRq2;
+    ofstream cosineRq3;
+    ofstream stdevCosRq1;
+    ofstream stdevCosRq2;
+    ofstream stdevCosRq3;
+
     probTwoOut.open("positionVSProbabilityOutput2.csv"); //FILE FOR SECOND PROBABILITY OUTPUT
-    probThreeOut.open("positionVSProbabilityOutput3.csv"); //FILE FOR THIRD PROBABILITY OUTPUT
     posMean.open("positionVSMeanSquareOutput.csv");
+    posMean2.open("positionVSMeanSquare2output.csv");
+    posStdevMean.open("pstdevMean.csv");
+    cosineRq1.open("ptimeVScosRq1.csv");
+    cosineRq2.open("ptimeVScosRq2.csv");
+    cosineRq3.open("ptimeVScosRq3.csv");
+    stdevCosRq1.open("pStdevCosRq1.csv");
+    stdevCosRq2.open("pStdevCosRq2.csv");
+    stdevCosRq3.open("pStdevCosRq3.csv");
 
     cout << "NUMBER OF WALKERS: " << numWalkers << endl;
     cout << "NUMBER OF STEPS: " << numSteps << endl << endl;
 
     //aStepSquared IS WHERE A STEP OF A WALKER IS SQUARED
     int* aStepSquared = new int[numSteps];
+    int* aStepSquared2 = new int[numSteps];
+
     double* cosRq1 = new double[numSteps];
     double* cosRq2 = new double[numSteps];
     double* cosRq3 = new double[numSteps];
 
+    double* cosSqrdRq1 = new double[numSteps];
+    double* cosSqrdRq2 = new double[numSteps];
+    double* cosSqrdRq3 = new double[numSteps];
+
     for (int itime = 0; itime < numSteps; itime++) {
         aStepSquared[itime] = 0;
+        aStepSquared2[itime] = 0;
+
         cosRq1[itime] = 0.0;
         cosRq2[itime] = 0.0;
         cosRq3[itime] = 0.0;
+
+        cosSqrdRq1[itime] = 0.0;
+        cosSqrdRq2[itime] = 0.0;
+        cosSqrdRq3[itime] = 0.0;
     }
 
     //SET PROBABILITY VARIABLES
@@ -74,15 +91,22 @@ int main(int argc, char const* argv[])
             else
                 currentPosition--;
             //==============================
-            //TASK TO SHOW NUMERICAL AND ANALYTICAL PART OF x^2 or aStepSquared
             cout << "==== New position is: " << currentPosition << endl;
 
             //COMPUTE aStepSquared[itime] and cosRq1, cosRq2, cosRq3
-            //TASK TO SHOW BOTH NUMERICAL AND ANALYTIC PART OF THE DIFFERENT q's: q1, q2, q3
             aStepSquared[itime] += (currentPosition * currentPosition);
+            aStepSquared2[itime] += pow(currentPosition, 4);
+
+            // cos (q*R)
             cosRq1[itime] += cos(q1 * currentPosition);
             cosRq2[itime] += cos(q2 * currentPosition);
             cosRq3[itime] += cos(q3 * currentPosition);
+
+            //cos^2 (q*R)
+            cosSqrdRq1[itime] += cos(q1 * currentPosition) * cos(q1 * currentPosition);
+            cosSqrdRq2[itime] += cos(q2 * currentPosition) * cos(q2 * currentPosition);
+            cosSqrdRq3[itime] += cos(q3 * currentPosition) * cos(q3 * currentPosition);
+
 
             //cout << "==== The squared displacement is x^2 = " << aStepSquared[itime] << endl << endl;
 
@@ -96,28 +120,35 @@ int main(int argc, char const* argv[])
     cout << endl;
     for (int itime = 0; itime < numSteps; itime++) {
         double meanSquare = (double)aStepSquared[itime] / (double)numWalkers;
+        double meanSquare2 = (double)aStepSquared2[itime] / (double)numWalkers;
+
+        //<cos(q*R)>
         cosRq1[itime] = (double)cosRq1[itime] / (double)numWalkers;
         cosRq2[itime] = (double)cosRq2[itime] / (double)numWalkers;
         cosRq3[itime] = (double)cosRq3[itime] / (double)numWalkers;
 
-        posMean << itime << ", " << meanSquare << ", " << cosRq1[itime] << ", " << cosRq2[itime] << ", " << cosRq3[itime] << endl;
+        //<cos^2(q*R)>
+        cosSqrdRq1[itime] = (double)cosSqrdRq1[itime] / (double)numWalkers;
+        cosSqrdRq2[itime] = (double)cosSqrdRq2[itime] / (double)numWalkers;
+        cosSqrdRq3[itime] = (double)cosSqrdRq3[itime] / (double)numWalkers;
+
+        //standard deviation
+
+        double stdevMeanSquare = (double)sqrt(meanSquare2 - meanSquare);
+        double stdevCosSqrdRq1 = (double)sqrt(cosSqrdRq1[itime] - (cosRq1[itime] * cosRq1[itime]));
+        double stdevCosSqrdRq2 = (double)sqrt(cosSqrdRq2[itime] - (cosRq2[itime] * cosRq2[itime]));
+        double stdevCosSqrdRq3 = (double)sqrt(cosSqrdRq3[itime] - (cosRq3[itime] * cosRq3[itime]));
+
+        posMean << itime << ", " << meanSquare << endl;
+        posMean2 << itime << ", " << meanSquare2 << endl;
+        posStdevMean << itime << ", " << stdevMeanSquare << endl;
+        cosineRq1 << itime << ", " << cosRq1[itime] << endl;
+        cosineRq2 << itime << ", " << cosRq2[itime] << endl;
+        cosineRq3 << itime << ", " << cosRq3[itime] << endl;
+        stdevCosRq1 << itime << ", " << stdevCosSqrdRq1 << endl; 
+        stdevCosRq2 << itime << ", " << stdevCosSqrdRq2 << endl;
+        stdevCosRq3 << itime << ", " << stdevCosSqrdRq3 << endl;
     }
-
-
-    //GETTING PROBABILITY OF FINAL POSITION
-    //USING FACTORIAL METHOD; ANALYTICAL VERSION
-    //TASK: TO INSERT AGAIN THE PREVIOUS PROBABILITY AND OVERLAP THE VALUES
-    //TO SHOW PLOTS OF PROBABILITY DIST: GAUSSIAN, BINOMIAL (USE EXCEL), NUMERICAL SOLUTION
-    cout << endl;
-    cout << "Probability Values:" << endl << endl;
-
-    for (int position = (-1 * numSteps); position <= numSteps; position += 2)
-    {
-        double totalPossibleVisits = fact(numSteps) / (fact((numSteps + abs(position)) / 2) * fact((numSteps - abs(position)) / 2));
-        double prob = totalPossibleVisits / pow(2, numSteps);
-        probOut << position << ", " << prob << endl;
-    }
-
     cout << endl << endl;
 
     //OTHER PROBABILITY REQUESTED
@@ -137,25 +168,17 @@ int main(int argc, char const* argv[])
         probTwoOut << i - numSteps << ", " << probability[i] << endl;  // Output(x,y): POSITION VS PROBABILITY
     }
 
-    //THIRD PROBABILITY REQUESTED
-    //USING LOGARITHMIC EQUATION
-
-    cout << endl << endl;
-    cout << "COMPUTING PROBABILITY USING LOGARITHMIC EQUATION .." << endl << endl;
-    double probLN;
-    int N = numSteps;
-
-    for (int i = 0; i < (2 * numSteps + 1); i += 2) {
-        int m = abs(i - numSteps);
-        probLN = pow((N / 2), N) / (pow((N + m) / 2, (N + m) / 2) * pow((N - m)/2, (N - m) / 2));
-        probThreeOut << i - numSteps << ", " << probLN << endl;
-    }
-
-
-    probOut.close();
     probTwoOut.close();
-    probThreeOut.close();
     posMean.close();
+    posMean2.close();
+    posStdevMean.close();
+    cosineRq1.close();
+    cosineRq2.close();
+    cosineRq3.close();
+    stdevCosRq1.close();
+    stdevCosRq2.close();
+    stdevCosRq3.close();
+
     return 0;
 
 }
