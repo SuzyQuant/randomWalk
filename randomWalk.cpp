@@ -14,15 +14,32 @@ const int numSteps = 1000;  //NUMBER OF STEPS
 
 double q1 = 1 / sqrt(numSteps), q2 = 1, q3 = sqrt(numSteps);
 
+const int a = 2; //STARTING POINT a in GOEMETRIC PROGRESSION
+const int r = 2; //COMMON RATIO r in GEOMTRIC PROGRESSION
+
 int main(int argc, char const* argv[])
 {
     //SET OUTPUT TEXT FILES
     ofstream probTwoOut;
     ofstream posMean;
+    ofstream gpOut;
     probTwoOut.open("positionVSProbabilityOutput2.csv"); //FILE FOR SECOND PROBABILITY OUTPUT
     posMean.open("positionVSMeanSquareOutput.csv");
+    gpOut.open("geometricProgression.csv");
 
-  
+    //====================================================//
+    //=== GEOMETRIC PROGRESSION ==========================//
+    unsigned long int* theGP = new unsigned long int[numSteps]; //WILL CONTAIN THE PROGRESSION 
+    int* stepsTracker = new int[numSteps]; //TRACKS ALL STEPS TAKEN
+    int currentGPValue = 0; //STARTS AT POSITION 0 IN THE theGP array, THIS WILL BE USED TO CHECK IF THE CURRENT STEP TAKEN IS EQUAL TO THE NEXT GEOMTRIC PROGRESSION
+    //Get the progression up to 30. It gets too big after 30.
+    for (int N = 1; N <= 30; N++) {
+        theGP[N-1] = a * pow(r, N-1);
+    }
+    for (int i = 0; i < numSteps; i++)
+        stepsTracker[i] = 0; //Initialize tracker
+    //=====================================================//
+
     //aStepSquared IS WHERE A STEP OF A WALKER IS SQUARED
     int* aStepSquared = new int[numSteps];
     int* aStepSquared2 = new int[numSteps];
@@ -90,7 +107,26 @@ int main(int argc, char const* argv[])
 
             //cout << "==== The squared displacement is x^2 = " << aStepSquared[itime] << endl << endl;
 
+
+            //================================================================================================//
+            //====================== GEOMETRIC PROGRESSION ===================================================//
+            //CHECK IF CURRENT STEP IS THE NEXT GEOMETRIC PROGRESSION
+            //IF IT IS, DISPLAY STEPS TAKEN TO RECH THE PROGRESSION
+            stepsTracker[itime] = currentPosition;
+            if (itime == theGP[currentGPValue]) {
+                gpOut << "WLKR " << kWalkr + 1 << ", TIME " << theGP[currentGPValue] << ", ";
+                //output steps taken
+                for (int track = 0; track < itime; track++) {
+                    gpOut << "Position: " << float(stepsTracker[track]) << ", ";
+                }
+                gpOut << endl;
+                currentGPValue = currentGPValue + 1; //Go to next progression value
+            }
+            //======================================END FOR GEOMETRIC PROGRESSION=============================//
+            //================== RESET currentGPValue FOR THE NEXT WALKER (SEE BELOW THIS ONE) ===============//
         }
+        currentGPValue = 0; //GO BACK TO FIRST PROGRESSION VALUE FOR THE NEXT WALKER
+
         //cout << endl;
         //INCREMENT countNumberOfVisits[] EVERYTIME currentPosition IS VISITED
         countNumberOfVisits[currentPosition + numSteps] += 1;
@@ -150,6 +186,7 @@ int main(int argc, char const* argv[])
 
     probTwoOut.close();
     posMean.close();
+    gpOut.close();
 
     cout << endl << "Done";
 
