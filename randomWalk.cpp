@@ -9,8 +9,8 @@
 
 using namespace std;
 
-const int numWalkers = 100;  //NUMBER OF WALKERS
-const int numSteps = 500;  //NUMBER OF STEPS (CANNOT SET GREATER THAN 22 SINCE FACTORIAL IS GOING TO BEHAVE ABNORMALLY, MEMORY CAN'T CONTAIN)
+const int numWalkers = 600;  //NUMBER OF WALKERS
+const int numSteps = 1000;  //NUMBER OF STEPS
 
 double q1 = 1 / sqrt(numSteps), q2 = 1, q3 = sqrt(numSteps);
 
@@ -19,29 +19,10 @@ int main(int argc, char const* argv[])
     //SET OUTPUT TEXT FILES
     ofstream probTwoOut;
     ofstream posMean;
-    ofstream posMean2;
-    ofstream posStdevMean;
-    ofstream cosineRq1;
-    ofstream cosineRq2;
-    ofstream cosineRq3;
-    ofstream stdevCosRq1;
-    ofstream stdevCosRq2;
-    ofstream stdevCosRq3;
-
     probTwoOut.open("positionVSProbabilityOutput2.csv"); //FILE FOR SECOND PROBABILITY OUTPUT
     posMean.open("positionVSMeanSquareOutput.csv");
-    posMean2.open("positionVSMeanSquare2output.csv");
-    posStdevMean.open("pstdevMean.csv");
-    cosineRq1.open("ptimeVScosRq1.csv");
-    cosineRq2.open("ptimeVScosRq2.csv");
-    cosineRq3.open("ptimeVScosRq3.csv");
-    stdevCosRq1.open("pStdevCosRq1.csv");
-    stdevCosRq2.open("pStdevCosRq2.csv");
-    stdevCosRq3.open("pStdevCosRq3.csv");
 
-    cout << "NUMBER OF WALKERS: " << numWalkers << endl;
-    cout << "NUMBER OF STEPS: " << numSteps << endl << endl;
-
+  
     //aStepSquared IS WHERE A STEP OF A WALKER IS SQUARED
     int* aStepSquared = new int[numSteps];
     int* aStepSquared2 = new int[numSteps];
@@ -91,7 +72,7 @@ int main(int argc, char const* argv[])
             else
                 currentPosition--;
             //==============================
-            cout << "==== New position is: " << currentPosition << endl;
+            //cout << "==== New position is: " << currentPosition << endl;
 
             //COMPUTE aStepSquared[itime] and cosRq1, cosRq2, cosRq3
             aStepSquared[itime] += (currentPosition * currentPosition);
@@ -107,17 +88,15 @@ int main(int argc, char const* argv[])
             cosSqrdRq2[itime] += cos(q2 * currentPosition) * cos(q2 * currentPosition);
             cosSqrdRq3[itime] += cos(q3 * currentPosition) * cos(q3 * currentPosition);
 
-
             //cout << "==== The squared displacement is x^2 = " << aStepSquared[itime] << endl << endl;
 
         }
-        cout << endl;
+        //cout << endl;
         //INCREMENT countNumberOfVisits[] EVERYTIME currentPosition IS VISITED
         countNumberOfVisits[currentPosition + numSteps] += 1;
     }
 
     //Mean Square
-    cout << endl;
     for (int itime = 0; itime < numSteps; itime++) {
         double meanSquare = (double)aStepSquared[itime] / (double)numWalkers;
         double meanSquare2 = (double)aStepSquared2[itime] / (double)numWalkers;
@@ -132,52 +111,47 @@ int main(int argc, char const* argv[])
         cosSqrdRq2[itime] = (double)cosSqrdRq2[itime] / (double)numWalkers;
         cosSqrdRq3[itime] = (double)cosSqrdRq3[itime] / (double)numWalkers;
 
-        //standard deviation
+        //standard deviation of the mean
 
-        double stdevMeanSquare = (double)sqrt(meanSquare2 - meanSquare);
+        double stdevMeanSquare = (double)sqrt(meanSquare2 - meanSquare * meanSquare);
+        double stdErrorOfMean = (double)(stdevMeanSquare / sqrt(numWalkers));
+
         double stdevCosSqrdRq1 = (double)sqrt(cosSqrdRq1[itime] - (cosRq1[itime] * cosRq1[itime]));
-        double stdevCosSqrdRq2 = (double)sqrt(cosSqrdRq2[itime] - (cosRq2[itime] * cosRq2[itime]));
-        double stdevCosSqrdRq3 = (double)sqrt(cosSqrdRq3[itime] - (cosRq3[itime] * cosRq3[itime]));
+        double stdErrorCosSqrdRq1 = (double)(stdevCosSqrdRq1 / sqrt(numWalkers));
 
-        posMean << itime << ", " << meanSquare << endl;
-        posMean2 << itime << ", " << meanSquare2 << endl;
-        posStdevMean << itime << ", " << stdevMeanSquare << endl;
-        cosineRq1 << itime << ", " << cosRq1[itime] << endl;
-        cosineRq2 << itime << ", " << cosRq2[itime] << endl;
-        cosineRq3 << itime << ", " << cosRq3[itime] << endl;
-        stdevCosRq1 << itime << ", " << stdevCosSqrdRq1 << endl; 
-        stdevCosRq2 << itime << ", " << stdevCosSqrdRq2 << endl;
-        stdevCosRq3 << itime << ", " << stdevCosSqrdRq3 << endl;
+        double stdevCosSqrdRq2 = (double)sqrt(cosSqrdRq2[itime] - (cosRq2[itime] * cosRq2[itime]));
+        double stdErrorCosSqrdRq2 = (double)(stdevCosSqrdRq2 / sqrt(numWalkers));
+
+        double stdevCosSqrdRq3 = (double)sqrt(cosSqrdRq3[itime] - (cosRq3[itime] * cosRq3[itime]));
+        double stdErrorCosSqrdRq3 = (double)(stdevCosSqrdRq3 / sqrt(numWalkers));
+
+        // .csv file
+        posMean << itime << ", " << meanSquare << "," << stdErrorOfMean << "," << cosRq1[itime] << "," << cosRq2[itime] << "," << cosRq3[itime] << "," << stdErrorCosSqrdRq1 << "," << stdErrorCosSqrdRq2 << "," << stdErrorCosSqrdRq3 << endl;
     }
-    cout << endl << endl;
+
+    //cout << endl << endl;
 
     //OTHER PROBABILITY REQUESTED
     //UTILIZING ONLY THE VISITS ACTUALLY DONE
     //==================================
 
-    cout << endl;
-    cout << "Probability Values:" << endl << endl;
+    //cout << endl;
+    //cout << "Probability Values:" << endl << endl;
 
     for (int i = 0; i < (2 * numSteps + 1); i += 2)
     {
         //COMPUTE PROBABILITY OF POSITION i
         probability[i] = (double)countNumberOfVisits[i] / (double)numWalkers;
-        if (countNumberOfVisits[i] != 0) {
-            cout << "Total Steps and Probability of Walker To Be At Distance " << i - numSteps << ": " << countNumberOfVisits[i] << ", " << probability[i] << endl;
-        }
+        //if (countNumberOfVisits[i] != 0) {
+        //    cout << "Total Steps and Probability of Walker To Be At Distance " << i - numSteps << ": " << countNumberOfVisits[i] << ", " << probability[i] << endl;
+        //}
         probTwoOut << i - numSteps << ", " << probability[i] << endl;  // Output(x,y): POSITION VS PROBABILITY
     }
 
     probTwoOut.close();
     posMean.close();
-    posMean2.close();
-    posStdevMean.close();
-    cosineRq1.close();
-    cosineRq2.close();
-    cosineRq3.close();
-    stdevCosRq1.close();
-    stdevCosRq2.close();
-    stdevCosRq3.close();
+
+    cout << endl << "Done";
 
     return 0;
 
