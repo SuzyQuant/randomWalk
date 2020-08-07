@@ -17,12 +17,16 @@ double q1 = 1 / sqrt(numSteps), q2 = 1, q3 = sqrt(numSteps);
 const int a = 2; //STARTING POINT a in GOEMETRIC PROGRESSION
 const int r = 2; //COMMON RATIO r in GEOMTRIC PROGRESSION
 
+//For Binary Output
+char buffer[100];
+
 int main(int argc, char const* argv[])
 {
     //SET OUTPUT TEXT FILES
     ofstream probTwoOut;
     ofstream posMean;
     ofstream gpOut;
+
     probTwoOut.open("positionVSProbabilityOutput2.csv"); //FILE FOR SECOND PROBABILITY OUTPUT
     posMean.open("positionVSMeanSquareOutput.csv");
     gpOut.open("geometricProgression.csv");
@@ -30,14 +34,16 @@ int main(int argc, char const* argv[])
     //====================================================//
     //=== GEOMETRIC PROGRESSION ==========================//
     unsigned long int* theGP = new unsigned long int[numSteps]; //WILL CONTAIN THE PROGRESSION 
-    int* stepsTracker = new int[numSteps]; //TRACKS ALL STEPS TAKEN
+    float* stepsTracker = new float[numSteps]; //TRACKS ALL STEPS TAKEN
     int currentGPValue = 0; //STARTS AT POSITION 0 IN THE theGP array, THIS WILL BE USED TO CHECK IF THE CURRENT STEP TAKEN IS EQUAL TO THE NEXT GEOMTRIC PROGRESSION
     //Get the progression up to 30. It gets too big after 30.
     for (int N = 1; N <= 30; N++) {
-        theGP[N-1] = a * pow(r, N-1);
+        theGP[N - 1] = a * pow(r, N - 1);
     }
     for (int i = 0; i < numSteps; i++)
         stepsTracker[i] = 0; //Initialize tracker
+
+    fstream myBinFile("data.bin", ios::out | ios::app | ios::binary);   //BINARY FILE OUTPUT
     //=====================================================//
 
     //aStepSquared IS WHERE A STEP OF A WALKER IS SQUARED
@@ -116,10 +122,13 @@ int main(int argc, char const* argv[])
             if (itime == theGP[currentGPValue]) {
                 gpOut << "WLKR " << kWalkr + 1 << ", TIME " << theGP[currentGPValue] << ", ";
                 //output steps taken
+                myBinFile.write((char*)&theGP[currentGPValue], sizeof(unsigned long int)); //OUTPUT TO BINARY FILE THE CURRENT GEEOMETRIC PROGRESSION VALUE
                 for (int track = 0; track < itime; track++) {
                     gpOut << "Position: " << float(stepsTracker[track]) << ", ";
+                    myBinFile.write((char*)&stepsTracker[track], sizeof(float)); //OUTPUT TO BINARY FILE THE STEPS TO REACH THE CURRENT GEOMETRIC PROGRESSION VALUE
                 }
-                gpOut << endl;
+                gpOut << endl; 
+                myBinFile<< "\r\n";
                 currentGPValue = currentGPValue + 1; //Go to next progression value
             }
             //======================================END FOR GEOMETRIC PROGRESSION=============================//
@@ -184,6 +193,7 @@ int main(int argc, char const* argv[])
         probTwoOut << i - numSteps << ", " << probability[i] << endl;  // Output(x,y): POSITION VS PROBABILITY
     }
 
+    myBinFile.close();
     probTwoOut.close();
     posMean.close();
     gpOut.close();
