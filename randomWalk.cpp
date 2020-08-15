@@ -130,6 +130,8 @@ int main(int argc, char const* argv[])
         //CHECK IF THE GP VALUE IS GREATER THAN NUMSTEPS. IF GREATER, STOP OUTPUT
         if (theGP[gpVal] > numSteps)
             break;
+
+        gpOut << theGP[gpVal] << " ";
         //FOR LOOP FOR EACH WALKER
         for (int wlkr = 0; wlkr < numWalkers; wlkr++) {
             
@@ -145,14 +147,11 @@ int main(int argc, char const* argv[])
                 //IF CURRENT STEP NO. IS EQUAL TO CURRENT GP VALUE theGP[gpVal]
                 //THEN DISPLAY ALL STEPS TAKEN BY CURRENT WALKER UP TO THE CURRENT GEOMETRIC PROGRESSION VALUE
                 if (step == theGP[gpVal]) {
-                    gpOut << "GP " << theGP[gpVal] << " WLKR " << wlkr + 1 << " FINAL STEP: " << allStepsOfWalker[step - 1];
-                    //for (int i = 0; i < step; i++) {
-                    //    gpOut << allStepsOfWalker[i] << " ";
-                    //}
-                    gpOut << endl;
+                    gpOut << allStepsOfWalker[step - 1] << " ";
                 }
             }
         }
+        gpOut << endl;
     }
 
     //Mean Square
