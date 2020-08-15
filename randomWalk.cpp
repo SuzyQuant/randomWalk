@@ -31,8 +31,8 @@ int main(int argc, char const* argv[])
     ofstream gpOut; //GEOMETRIC PROGRESSION FILE
     ofstream normalTOut;
 
-    probTwoOut.open("positionVSProbabilityOutput2.csv"); //FILE FOR SECOND PROBABILITY OUTPUT
-    posMean.open("positionVSMeanSquareOutput.csv");
+    probTwoOut.open("positionVSProbabilityOutput2.txt"); //FILE FOR SECOND PROBABILITY OUTPUT
+    posMean.open("positionVSMeanSquareOutput.txt");
     gpOut.open("geometricProgression.txt"); //GEOMETRIC PROGRESSION FILE
     normalTOut.open("normalTime.txt");
 
@@ -42,10 +42,11 @@ int main(int argc, char const* argv[])
     float* stepsTracker = new float[numSteps * numWalkers]; //TRACKS ALL STEPS TAKEN
     int currentGPValue = 0; //STARTS AT POSITION 0 IN THE theGP array, THIS WILL BE USED TO CHECK IF THE CURRENT STEP TAKEN IS EQUAL TO THE NEXT GEOMTRIC PROGRESSION
     //Get the progression up to 30. It gets too big after 30.
-    for (int N = 1; N <= maxGP; N++) {
-        theGP[N - 1] = a * pow(r, N - 1);
+    for (int N = 0; N < maxGP; N++) {
+        theGP[N] = a * pow(r, N);
     }
-    for (int i = 0; i < numSteps*numWalkers; i++)
+
+    for (int i = 0; i < numSteps * numWalkers; i++)
         stepsTracker[i] = 0; //Initialize tracker
     int trackercounter = 0;
     //=====================================================//
@@ -136,7 +137,7 @@ int main(int argc, char const* argv[])
         gpOut << theGP[gpVal] << " ";
         //FOR LOOP FOR EACH WALKER
         for (int wlkr = 0; wlkr < numWalkers; wlkr++) {
-            
+
             //THIS WILL HOLD ALL STEPS TAKEN BY CURRENT WALKER
             float* allStepsOfWalker = new float[numSteps];
 
@@ -158,14 +159,14 @@ int main(int argc, char const* argv[])
 
     //FOR LOOP FOR EACH NORMAL TIME
     for (int normTime = 0; normTime < numSteps; normTime++) {
-        normalTOut << normTime + 1<< " ";
+        normalTOut << normTime + 1 << " ";
         //FOR LOOP FOR EACH WALKER
         for (int wlkr = 0; wlkr < numWalkers; wlkr++) {
 
             float finalStep = stepsTracker[wlkr * numSteps + normTime];
             normalTOut << finalStep << " ";
         }
-        normalTOut << endl << endl;
+        normalTOut << endl;
     }
 
     //Mean Square
@@ -198,14 +199,8 @@ int main(int argc, char const* argv[])
         double stdErrorCosSqrdRq3 = (double)(stdevCosSqrdRq3 / sqrt(numWalkers));
 
         // .csv file
-        posMean << itime << ", " << meanSquare << "," << stdErrorOfMean << "," << cosRq1[itime] << "," << cosRq2[itime] << "," << cosRq3[itime] << "," << stdErrorCosSqrdRq1 << "," << stdErrorCosSqrdRq2 << "," << stdErrorCosSqrdRq3 << endl;
+        posMean << itime << "  " << meanSquare << " " << stdErrorOfMean << " " << cosRq1[itime] << " " << cosRq2[itime] << " " << cosRq3[itime] << " " << stdErrorCosSqrdRq1 << " " << stdErrorCosSqrdRq2 << " " << stdErrorCosSqrdRq3 << endl;
     }
-
-    //cout << endl << endl;
-
-    //OTHER PROBABILITY REQUESTED
-    //UTILIZING ONLY THE VISITS ACTUALLY DONE
-    //==================================
 
     //cout << endl;
     //cout << "Probability Values:" << endl << endl;
@@ -214,9 +209,6 @@ int main(int argc, char const* argv[])
     {
         //COMPUTE PROBABILITY OF POSITION i
         probability[i] = (double)countNumberOfVisits[i] / (double)numWalkers;
-        //if (countNumberOfVisits[i] != 0) {
-        //    cout << "Total Steps and Probability of Walker To Be At Distance " << i - numSteps << ": " << countNumberOfVisits[i] << ", " << probability[i] << endl;
-        //}
         probTwoOut << i - numSteps << ", " << probability[i] << endl;  // Output(x,y): POSITION VS PROBABILITY
     }
 
