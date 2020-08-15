@@ -29,10 +29,12 @@ int main(int argc, char const* argv[])
     ofstream probTwoOut;
     ofstream posMean;
     ofstream gpOut; //GEOMETRIC PROGRESSION FILE
+    ofstream normalTOut;
 
     probTwoOut.open("positionVSProbabilityOutput2.csv"); //FILE FOR SECOND PROBABILITY OUTPUT
     posMean.open("positionVSMeanSquareOutput.csv");
     gpOut.open("geometricProgression.txt"); //GEOMETRIC PROGRESSION FILE
+    normalTOut.open("normalTime.txt");
 
     //====================================================//
     //=== GEOMETRIC PROGRESSION ==========================//
@@ -154,6 +156,18 @@ int main(int argc, char const* argv[])
         gpOut << endl;
     }
 
+    //FOR LOOP FOR EACH NORMAL TIME
+    for (int normTime = 0; normTime < numSteps; normTime++) {
+        normalTOut << normTime + 1<< " ";
+        //FOR LOOP FOR EACH WALKER
+        for (int wlkr = 0; wlkr < numWalkers; wlkr++) {
+
+            float finalStep = stepsTracker[wlkr * numSteps + normTime];
+            normalTOut << finalStep << " ";
+        }
+        normalTOut << endl << endl;
+    }
+
     //Mean Square
     for (int itime = 0; itime < numSteps; itime++) {
         double meanSquare = (double)aStepSquared[itime] / (double)numWalkers;
@@ -209,6 +223,7 @@ int main(int argc, char const* argv[])
     probTwoOut.close();
     posMean.close();
     gpOut.close();
+    normalTOut.close();
 
     cout << endl << "Done";
 
