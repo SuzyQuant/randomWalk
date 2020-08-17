@@ -31,10 +31,10 @@ int main(int argc, char const* argv[])
     ofstream gpOut; //GEOMETRIC PROGRESSION FILE
     ofstream normalTOut;
 
-    probTwoOut.open("positionVSProbabilityOutput2.txt"); //FILE FOR SECOND PROBABILITY OUTPUT
-    posMean.open("positionVSMeanSquareOutput.txt");
-    gpOut.open("geometricProgression.txt"); //GEOMETRIC PROGRESSION FILE
-    normalTOut.open("normalTime.txt");
+    probTwoOut.open("positionVSProbabilityOutput2.csv"); //FILE FOR SECOND PROBABILITY OUTPUT
+    posMean.open("positionVSMeanSquareOutput.csv");
+    gpOut.open("geometricProgression.csv"); //GEOMETRIC PROGRESSION FILE
+    normalTOut.open("normalTime.csv");
 
     //====================================================//
     //=== GEOMETRIC PROGRESSION ==========================//
@@ -169,6 +169,13 @@ int main(int argc, char const* argv[])
         normalTOut << endl;
     }
 
+    //TASK: TO CREATE TWO PROGRAMS FROM THE EXISTING PROGRAM THAT WILL ANALYZE THE DATA .dat or .txt 
+    //One is to generate the data into .dat files, the other is to analyze the data through the subtasks below
+    //Sub - Task:
+        // Create a function that will read the data files.dat
+        // Create function that will solve the Mean Square like the existing code
+        // Create function that will solve the probability like the existing code
+
     //Mean Square
     for (int itime = 0; itime < numSteps; itime++) {
         double meanSquare = (double)aStepSquared[itime] / (double)numWalkers;
@@ -199,7 +206,7 @@ int main(int argc, char const* argv[])
         double stdErrorCosSqrdRq3 = (double)(stdevCosSqrdRq3 / sqrt(numWalkers));
 
         // .csv file
-        posMean << itime << "  " << meanSquare << " " << stdErrorOfMean << " " << cosRq1[itime] << " " << cosRq2[itime] << " " << cosRq3[itime] << " " << stdErrorCosSqrdRq1 << " " << stdErrorCosSqrdRq2 << " " << stdErrorCosSqrdRq3 << endl;
+        posMean << itime << " , " << meanSquare << " ," << stdErrorOfMean << ", " << cosRq1[itime] << " ," << cosRq2[itime] << ", " << cosRq3[itime] << ", " << stdErrorCosSqrdRq1 << ", " << stdErrorCosSqrdRq2 << ", " << stdErrorCosSqrdRq3 << endl;
     }
 
     //cout << endl;
